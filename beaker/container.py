@@ -6,9 +6,10 @@ if util.py3k:
         import dbm as anydbm
     except:
         import dumbdbm as anydbm
+    import pickle
 else:
     import anydbm
-import cPickle
+    import cPickle as pickle
 import logging
 import os
 import time
@@ -592,13 +593,13 @@ class DBMNamespaceManager(OpenResourceNamespaceManager):
             os.remove(f)
 
     def __getitem__(self, key):
-        return cPickle.loads(self.dbm[key])
+        return pickle.loads(self.dbm[key])
 
     def __contains__(self, key):
         return key in self.dbm
 
     def __setitem__(self, key, value):
-        self.dbm[key] = cPickle.dumps(value)
+        self.dbm[key] = pickle.dumps(value)
 
     def __delitem__(self, key):
         del self.dbm[key]
@@ -662,7 +663,7 @@ class FileNamespaceManager(OpenResourceNamespaceManager):
     def do_open(self, flags, replace):
         if not replace and self.file_exists(self.file):
             fh = open(self.file, 'rb')
-            self.hash = cPickle.load(fh)
+            self.hash = pickle.load(fh)
             fh.close()
 
         self.flags = flags
@@ -670,7 +671,7 @@ class FileNamespaceManager(OpenResourceNamespaceManager):
     def do_close(self):
         if self.flags == 'c' or self.flags == 'w':
             fh = open(self.file, 'wb')
-            cPickle.dump(self.hash, fh)
+            pickle.dump(self.hash, fh)
             fh.close()
 
         self.hash = {}
