@@ -1,7 +1,7 @@
 from warnings import warn
 
-from beaker.crypto.pbkdf2 import PBKDF2, strxor
-from beaker.crypto.util import hmac, sha1, hmac_sha1, md5
+from beaker.crypto.pbkdf2 import PBKDF2
+from beaker.crypto.util import hmac, sha1, hmac_sha1
 from beaker import util
 
 keyLength = None

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from beaker.util import py3k
 if py3k:
     import http.cookies as Cookie
@@ -262,8 +263,14 @@ class Session(dict):
         session_data = session_data or self.copy()
         if self.encrypt_key:
             nonce = b64encode(os.urandom(6))[:8]
-            encrypt_key = crypto.generateCryptoKeys(self.encrypt_key,
-                                             self.validate_key + nonce, 1)
+            if py3k:
+                encrypt_key = crypto.generateCryptoKeys(
+                    self.encrypt_key,
+                    self.validate_key.encode('utf-8') + nonce, 1)
+            else:
+                encrypt_key = crypto.generateCryptoKeys(
+                    self.encrypt_key,
+                    self.validate_key + nonce, 1)
             data = util.pickle.dumps(session_data, 2)
             return nonce + b64encode(crypto.aesEncrypt(data, encrypt_key))
         else:
@@ -276,8 +283,14 @@ class Session(dict):
         if self.encrypt_key:
             try:
                 nonce = session_data[:8]
-                encrypt_key = crypto.generateCryptoKeys(self.encrypt_key,
-                                                 self.validate_key + nonce, 1)
+                if py3k:
+                    encrypt_key = crypto.generateCryptoKeys(
+                        self.encrypt_key,
+                        self.validate_key.encode('utf-8') + nonce, 1)
+                else:
+                    encrypt_key = crypto.generateCryptoKeys(
+                        self.encrypt_key,
+                        self.validate_key + nonce, 1)
                 payload = b64decode(session_data[8:])
                 data = crypto.aesDecrypt(payload, encrypt_key)
             except:

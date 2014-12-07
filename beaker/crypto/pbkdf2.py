@@ -1,34 +1,34 @@
-#!/usr/bin/python
-# -*- coding: ascii -*-
+# -*- coding: utf-8 -*-
 ###########################################################################
-# PBKDF2.py - PKCS#5 v2.0 Password-Based Key Derivation
+# pbkdf2 - PKCS#5 v2.0 Password-Based Key Derivation
 #
-# Copyright (C) 2007 Dwayne C. Litzenberger <dlitz@dlitz.net>
-# All rights reserved.
+# Copyright (C) 2007-2011 Dwayne C. Litzenberger <dlitz@dlitz.net>
 #
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for any purpose and without fee is hereby granted,
-# provided that the above copyright notice appear in all copies and that
-# both that copyright notice and this permission notice appear in
-# supporting documentation.
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
 #
-# THE AUTHOR PROVIDES THIS SOFTWARE ``AS IS'' AND ANY EXPRESSED OR
-# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # Country of origin: Canada
 #
 ###########################################################################
 # Sample PBKDF2 usage:
 #   from Crypto.Cipher import AES
-#   from PBKDF2 import PBKDF2
+#   from pbkdf2 import PBKDF2
 #   import os
 #
 #   salt = os.urandom(8)    # 64-bit salt
@@ -38,7 +38,7 @@
 #     ...
 #
 # Sample crypt() usage:
-#   from PBKDF2 import crypt
+#   from pbkdf2 import crypt
 #   pwhash = crypt("secret")
 #   alleged_pw = raw_input("Enter password: ")
 #   if pwhash == crypt(alleged_pw, pwhash):
@@ -47,37 +47,60 @@
 #       print "Invalid password"
 #
 ###########################################################################
-# History:
-#
-#  2007-07-27 Dwayne C. Litzenberger <dlitz@dlitz.net>
-#   - Initial Release (v1.0)
-#
-#  2007-07-31 Dwayne C. Litzenberger <dlitz@dlitz.net>
-#   - Bugfix release (v1.1)
-#   - SECURITY: The PyCrypto XOR cipher (used, if available, in the _strxor
-#   function in the previous release) silently truncates all keys to 64
-#   bytes.  The way it was used in the previous release, this would only be
-#   problem if the pseudorandom function that returned values larger than
-#   64 bytes (so SHA1, SHA256 and SHA512 are fine), but I don't like
-#   anything that silently reduces the security margin from what is
-#   expected.
-#
-###########################################################################
 
-__version__ = "1.1"
+__version__ = "1.3"
+__all__ = ['PBKDF2', 'crypt']
 
 from struct import pack
-from binascii import b2a_hex
 from random import randint
-
-from base64 import b64encode
-
+import string
+import sys
 from beaker.crypto.util import hmac as HMAC, hmac_sha1 as SHA1
 
+#
+# Python 2.1 thru 3.2 compatibility
+#
 
-def strxor(a, b):
-    return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
-
+if sys.version_info[0] == 2:
+    _0xffffffffL = long(1) << 32
+    def isunicode(s):
+        return isinstance(s, unicode)
+    def isbytes(s):
+        return isinstance(s, str)
+    def isinteger(n):
+        return isinstance(n, (int, long))
+    def b(s):
+        return s
+    def binxor(a, b):
+        return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
+    def b64encode(data, chars="+/"):
+        tt = string.maketrans("+/", chars)
+        return data.encode('base64').replace("\n", "").translate(tt)
+    from binascii import b2a_hex
+else:
+    _0xffffffffL = 0xffffffff
+    def isunicode(s):
+        return isinstance(s, str)
+    def isbytes(s):
+        return isinstance(s, bytes)
+    def isinteger(n):
+        return isinstance(n, int)
+    def callable(obj):
+        return hasattr(obj, '__call__')
+    def b(s):
+       return s.encode("latin-1")
+    def binxor(a, b):
+        return bytes([x ^ y for (x, y) in zip(a, b)])
+    from base64 import b64encode as _b64encode
+    def b64encode(data, chars="+/"):
+        if isunicode(chars):
+            return _b64encode(data, chars.encode('utf-8')).decode('utf-8')
+        else:
+            return _b64encode(data, chars)
+    from binascii import b2a_hex as _b2a_hex
+    def b2a_hex(s):
+        return _b2a_hex(s).decode('us-ascii')
+    xrange = range
 
 class PBKDF2(object):
     """PBKDF2.py : PKCS#5 v2.0 Password-Based Key Derivation
@@ -101,15 +124,13 @@ class PBKDF2(object):
 
     def __init__(self, passphrase, salt, iterations=1000,
                  digestmodule=SHA1, macmodule=HMAC):
-        if not callable(macmodule):
-            macmodule = macmodule.new
         self.__macmodule = macmodule
         self.__digestmodule = digestmodule
         self._setup(passphrase, salt, iterations, self._pseudorandom)
 
     def _pseudorandom(self, key, msg):
         """Pseudorandom function.  e.g. HMAC-SHA1"""
-        return self.__macmodule(key=key, msg=msg,
+        return self.__macmodule.new(key=key, msg=msg,
             digestmod=self.__digestmodule).digest()
 
     def read(self, bytes):
@@ -122,13 +143,13 @@ class PBKDF2(object):
         i = self.__blockNum
         while size < bytes:
             i += 1
-            if i > 0xffffffff:
+            if i > _0xffffffffL or i < 1:
                 # We could return "" here, but
                 raise OverflowError("derived key too long")
             block = self.__f(i)
             blocks.append(block)
             size += len(block)
-        buf = "".join(blocks)
+        buf = b("").join(blocks)
         retval = buf[:bytes]
         self.__buf = buf[bytes:]
         self.__blockNum = i
@@ -136,12 +157,12 @@ class PBKDF2(object):
 
     def __f(self, i):
         # i must fit within 32 bits
-        assert (1 <= i and i <= 0xffffffff)
+        assert 1 <= i <= _0xffffffffL
         U = self.__prf(self.__passphrase, self.__salt + pack("!L", i))
         result = U
-        for j in xrange(2, 1 + self.__iterations):
+        for j in xrange(2, 1+self.__iterations):
             U = self.__prf(self.__passphrase, U)
-            result = strxor(result, U)
+            result = binxor(result, U)
         return result
 
     def hexread(self, octets):
@@ -156,17 +177,17 @@ class PBKDF2(object):
 
         # passphrase and salt must be str or unicode (in the latter
         # case, we convert to UTF-8)
-        if isinstance(passphrase, unicode):
+        if isunicode(passphrase):
             passphrase = passphrase.encode("UTF-8")
-        if not isinstance(passphrase, str):
+        elif not isbytes(passphrase):
             raise TypeError("passphrase must be str or unicode")
-        if isinstance(salt, unicode):
+        if isunicode(salt):
             salt = salt.encode("UTF-8")
-        if not isinstance(salt, str):
+        elif not isbytes(salt):
             raise TypeError("salt must be str or unicode")
 
         # iterations must be an integer >= 1
-        if not isinstance(iterations, (int, long)):
+        if not isinteger(iterations):
             raise TypeError("iterations must be an integer")
         if iterations < 1:
             raise ValueError("iterations must be at least 1")
@@ -180,7 +201,7 @@ class PBKDF2(object):
         self.__iterations = iterations
         self.__prf = prf
         self.__blockNum = 0
-        self.__buf = ""
+        self.__buf = b("")
         self.closed = False
 
     def close(self):
@@ -193,7 +214,6 @@ class PBKDF2(object):
             del self.__blockNum
             del self.__buf
             self.closed = True
-
 
 def crypt(word, salt=None, iterations=None):
     """PBKDF2-based unix crypt(3) replacement.
@@ -209,15 +229,17 @@ def crypt(word, salt=None, iterations=None):
         salt = _makesalt()
 
     # salt must be a string or the us-ascii subset of unicode
-    if isinstance(salt, unicode):
-        salt = salt.encode("us-ascii")
-    if not isinstance(salt, str):
+    if isunicode(salt):
+        salt = salt.encode('us-ascii').decode('us-ascii')
+    elif isbytes(salt):
+        salt = salt.decode('us-ascii')
+    else:
         raise TypeError("salt must be a string")
 
     # word must be a string or unicode (in the latter case, we convert to UTF-8)
-    if isinstance(word, unicode):
+    if isunicode(word):
         word = word.encode("UTF-8")
-    if not isinstance(word, str):
+    elif not isbytes(word):
         raise TypeError("word must be a string or unicode")
 
     # Try to extract the real salt and iteration count from the salt
@@ -252,96 +274,12 @@ def crypt(word, salt=None, iterations=None):
 # crypt.
 PBKDF2.crypt = staticmethod(crypt)
 
-
 def _makesalt():
     """Return a 48-bit pseudorandom salt for crypt().
 
     This function is not suitable for generating cryptographic secrets.
     """
-    binarysalt = "".join([pack("@H", randint(0, 0xffff)) for i in range(3)])
+    binarysalt = b("").join([pack("@H", randint(0, 0xffff)) for i in range(3)])
     return b64encode(binarysalt, "./")
-
-
-def test_pbkdf2():
-    """Module self-test"""
-    from binascii import a2b_hex
-
-    #
-    # Test vectors from RFC 3962
-    #
-
-    # Test 1
-    result = PBKDF2("password", "ATHENA.MIT.EDUraeburn", 1).read(16)
-    expected = a2b_hex("cdedb5281bb2f801565a1122b2563515")
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    # Test 2
-    result = PBKDF2("password", "ATHENA.MIT.EDUraeburn", 1200).hexread(32)
-    expected = ("5c08eb61fdf71e4e4ec3cf6ba1f5512b"
-                "a7e52ddbc5e5142f708a31e2e62b1e13")
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    # Test 3
-    result = PBKDF2("X" * 64, "pass phrase equals block size", 1200).hexread(32)
-    expected = ("139c30c0966bc32ba55fdbf212530ac9"
-                "c5ec59f1a452f5cc9ad940fea0598ed1")
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    # Test 4
-    result = PBKDF2("X" * 65, "pass phrase exceeds block size", 1200).hexread(32)
-    expected = ("9ccad6d468770cd51b10e6a68721be61"
-                "1a8b4d282601db3b36be9246915ec82a")
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    #
-    # Other test vectors
-    #
-
-    # Chunked read
-    f = PBKDF2("kickstart", "workbench", 256)
-    result = f.read(17)
-    result += f.read(17)
-    result += f.read(1)
-    result += f.read(2)
-    result += f.read(3)
-    expected = PBKDF2("kickstart", "workbench", 256).read(40)
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    #
-    # crypt() test vectors
-    #
-
-    # crypt 1
-    result = crypt("cloadm", "exec")
-    expected = '$p5k2$$exec$r1EWMCMk7Rlv3L/RNcFXviDefYa0hlql'
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    # crypt 2
-    result = crypt("gnu", '$p5k2$c$u9HvcT4d$.....')
-    expected = '$p5k2$c$u9HvcT4d$Sd1gwSVCLZYAuqZ25piRnbBEoAesaa/g'
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    # crypt 3
-    result = crypt("dcl", "tUsch7fU", iterations=13)
-    expected = "$p5k2$d$tUsch7fU$nqDkaxMDOFBeJsTSfABsyn.PYUXilHwL"
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-    # crypt 4 (unicode)
-    result = crypt(u'\u0399\u03c9\u03b1\u03bd\u03bd\u03b7\u03c2',
-        '$p5k2$$KosHgqNo$9mjN8gqjt02hDoP0c2J0ABtLIwtot8cQ')
-    expected = '$p5k2$$KosHgqNo$9mjN8gqjt02hDoP0c2J0ABtLIwtot8cQ'
-    if result != expected:
-        raise RuntimeError("self-test failed")
-
-if __name__ == '__main__':
-    test_pbkdf2()
 
 # vim:set ts=4 sw=4 sts=4 expandtab:
