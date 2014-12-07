@@ -6,22 +6,15 @@ from beaker import util
 
 keyLength = None
 
-if util.jython:
+try:
+    from beaker.crypto.nsscrypto import getKeyLength, aesEncrypt, aesDecrypt
+    keyLength = getKeyLength()
+except ImportError:
     try:
-        from beaker.crypto.jcecrypto import getKeyLength, aesEncrypt
+        from beaker.crypto.pycrypto import getKeyLength, aesEncrypt, aesDecrypt
         keyLength = getKeyLength()
     except ImportError:
         pass
-else:
-    try:
-        from beaker.crypto.nsscrypto import getKeyLength, aesEncrypt, aesDecrypt
-        keyLength = getKeyLength()
-    except ImportError:
-        try:
-            from beaker.crypto.pycrypto import getKeyLength, aesEncrypt, aesDecrypt
-            keyLength = getKeyLength()
-        except ImportError:
-            pass
 
 if not keyLength:
     has_aes = False
