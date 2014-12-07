@@ -1,11 +1,13 @@
 """Beaker utilities"""
 
 try:
-    import thread as _thread
     import threading as _threading
 except ImportError:
-    import dummy_thread as _thread
     import dummy_threading as _threading
+try:
+    import thread as _thread
+except:
+    import _thread
 
 from datetime import datetime, timedelta
 import os
