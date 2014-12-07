@@ -12,6 +12,14 @@ from beaker.cache import CacheManager
 from beaker.session import Session, SessionObject
 from beaker.util import coerce_cache_params, coerce_session_params, \
     parse_cache_config_options
+from beaker.util import py3k
+
+if py3k:
+    def iteritems(d, **kw):
+        return iter(d.items(**kw))
+else:
+    def iteritems(d, **kw):
+        return iter(d.iteritems(**kw))
 
 
 class CacheMiddleware(object):
@@ -111,7 +119,7 @@ class SessionMiddleware(object):
 
         # Pull out any config args meant for beaker session. if there are any
         for dct in [config, kwargs]:
-            for key, val in dct.iteritems():
+            for key, val in iteritems(dct):
                 if key.startswith('beaker.session.'):
                     self.options[key[15:]] = val
                 if key.startswith('session.'):
