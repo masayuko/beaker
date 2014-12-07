@@ -60,7 +60,7 @@ class _backends(object):
     def __getitem__(self, key):
         try:
             return self._clsmap[key]
-        except KeyError, e:
+        except KeyError as e:
             if not self.initialized:
                 self._mutex.acquire()
                 try:

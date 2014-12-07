@@ -160,7 +160,7 @@ class Session(dict):
         else:
             try:
                 self.load()
-            except Exception, e:
+            except Exception as e:
                 if invalidate_corrupt:
                     util.warn(
                         "Invalidating corrupt session %s; "
@@ -213,7 +213,7 @@ class Session(dict):
         try:
             if self.httponly:
                 self.cookie[self.key]['httponly'] = True
-        except Cookie.CookieError, e:
+        except Cookie.CookieError as e:
             if 'Invalid Attribute httponly' not in str(e):
                 raise
             util.warn('Python 2.6+ is required to use httponly')
