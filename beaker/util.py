@@ -296,30 +296,30 @@ def verify_rules(params, ruleset):
 
 def coerce_session_params(params):
     rules = [
-        ('data_dir', (str, types.NoneType), "data_dir must be a string "
+        ('data_dir', (str, type(None)), "data_dir must be a string "
          "referring to a directory."),
-        ('lock_dir', (str, types.NoneType), "lock_dir must be a string referring to a "
+        ('lock_dir', (str, type(None)), "lock_dir must be a string referring to a "
          "directory."),
-        ('type', (str, types.NoneType), "Session type must be a string."),
+        ('type', (str, type(None)), "Session type must be a string."),
         ('cookie_expires', (bool, datetime, timedelta, int), "Cookie expires was "
          "not a boolean, datetime, int, or timedelta instance."),
-        ('cookie_domain', (str, types.NoneType), "Cookie domain must be a "
+        ('cookie_domain', (str, type(None)), "Cookie domain must be a "
          "string."),
-        ('cookie_path', (str, types.NoneType), "Cookie path must be a "
+        ('cookie_path', (str, type(None)), "Cookie path must be a "
          "string."),
         ('id', (str,), "Session id must be a string."),
         ('key', (str,), "Session key must be a string."),
-        ('secret', (str, types.NoneType), "Session secret must be a string."),
-        ('validate_key', (str, types.NoneType), "Session encrypt_key must be "
+        ('secret', (str, type(None)), "Session secret must be a string."),
+        ('validate_key', (str, type(None)), "Session encrypt_key must be "
          "a string."),
-        ('encrypt_key', (str, types.NoneType), "Session validate_key must be "
+        ('encrypt_key', (str, type(None)), "Session validate_key must be "
          "a string."),
-        ('secure', (bool, types.NoneType), "Session secure must be a boolean."),
-        ('httponly', (bool, types.NoneType), "Session httponly must be a boolean."),
-        ('timeout', (int, types.NoneType), "Session timeout must be an "
+        ('secure', (bool, type(None)), "Session secure must be a boolean."),
+        ('httponly', (bool, type(None)), "Session httponly must be a boolean."),
+        ('timeout', (int, type(None)), "Session timeout must be an "
          "integer."),
-        ('auto', (bool, types.NoneType), "Session is created if accessed."),
-        ('webtest_varname', (str, types.NoneType), "Session varname must be "
+        ('auto', (bool, type(None)), "Session is created if accessed."),
+        ('webtest_varname', (str, type(None)), "Session varname must be "
          "a string."),
     ]
     opts = verify_rules(params, rules)
@@ -332,18 +332,18 @@ def coerce_session_params(params):
 
 def coerce_cache_params(params):
     rules = [
-        ('data_dir', (str, types.NoneType), "data_dir must be a string "
+        ('data_dir', (str, type(None)), "data_dir must be a string "
          "referring to a directory."),
-        ('lock_dir', (str, types.NoneType), "lock_dir must be a string referring to a "
+        ('lock_dir', (str, type(None)), "lock_dir must be a string referring to a "
          "directory."),
         ('type', (str,), "Cache type must be a string."),
-        ('enabled', (bool, types.NoneType), "enabled must be true/false "
+        ('enabled', (bool, type(None)), "enabled must be true/false "
          "if present."),
-        ('expire', (int, types.NoneType), "expire must be an integer representing "
+        ('expire', (int, type(None)), "expire must be an integer representing "
          "how many seconds the cache is valid for"),
-        ('regions', (list, tuple, types.NoneType), "Regions must be a "
+        ('regions', (list, tuple, type(None)), "Regions must be a "
          "comma seperated list of valid regions"),
-        ('key_length', (int, types.NoneType), "key_length must be an integer "
+        ('key_length', (int, type(None)), "key_length must be an integer "
          "which indicates the longest a key can be before hashing"),
     ]
     return verify_rules(params, rules)
