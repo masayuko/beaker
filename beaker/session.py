@@ -1,4 +1,8 @@
-import Cookie
+from beaker.util import py3k
+if py3k:
+    import http.cookies as Cookie
+else:
+    import Cookie
 import os
 from datetime import datetime, timedelta
 import time
