@@ -28,7 +28,7 @@ def threadtest(s, id):
         try:
             value = s.get('test', lambda: create(id))
             value.do_something(id)
-        except Exception, e:
+        except Exception as e:
             print("Error", e)
             running = False
             break
