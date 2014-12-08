@@ -8,14 +8,9 @@ v = open(os.path.join(os.path.dirname(__file__), 'beaker', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
 
-extra = {}
 tests_require = ['nose', 'webtest', 'Mock']
 pycryptopp = 'pycryptopp>=0.5.12'
-if sys.version_info >= (3, 0):
-    extra.update(
-        use_2to3=True,
-    )
-else:
+if not sys.version_info >= (3, 0):
     tests_require.append(pycryptopp)
 
 if not sys.platform.startswith('java') and not sys.platform == 'cli':
@@ -88,12 +83,9 @@ The latest developer version is available in a `github repository
       'Intended Audience :: Developers',
       'License :: OSI Approved :: BSD License',
       'Programming Language :: Python',
-      'Programming Language :: Python :: 2.4',
-      'Programming Language :: Python :: 2.5',
-      'Programming Language :: Python :: 2.6',
       'Programming Language :: Python :: 2.7',
-      'Programming Language :: Python :: 3',
-      'Programming Language :: Python :: 3.2',
+      'Programming Language :: Python :: 3.3',
+      'Programming Language :: Python :: 3.4',
       'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
       'Topic :: Internet :: WWW/HTTP :: WSGI',
       'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware',
@@ -123,6 +115,5 @@ The latest developer version is available in a `github repository
           memcached = beaker.ext.memcached:MemcachedNamespaceManager
           google = beaker.ext.google:GoogleNamespaceManager
           sqla = beaker.ext.sqla:SqlaNamespaceManager
-      """,
-      **extra
+      """
 )
