@@ -318,8 +318,12 @@ class Cache(object):
     remove = remove_value
 
     def _get_value(self, key, **kw):
-        if isinstance(key, unicode):
-            key = key.encode('ascii', 'backslashreplace')
+        if util.py3k:
+            if isinstance(key, str):
+                key = key.encode('ascii', 'backslashreplace')
+        else:
+            if isinstance(key, unicode):
+                key = key.encode('ascii', 'backslashreplace')
 
         if 'type' in kw:
             return self._legacy_get_value(key, **kw)
