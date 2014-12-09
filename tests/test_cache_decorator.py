@@ -36,7 +36,7 @@ def make_cached_func(**opts):
 def make_region_cached_func():
     opts = {}
     opts['cache.regions'] = 'short_term, long_term'
-    opts['cache.short_term.expire'] = '2'
+    opts['cache.short_term.expire'] = 2
     cache = make_cache_obj(**opts)
 
     @cache_region('short_term', 'region_loader')
@@ -48,7 +48,7 @@ def make_region_cached_func():
 def make_region_cached_func_2():
     opts = {}
     opts['cache.regions'] = 'short_term, long_term'
-    opts['cache.short_term.expire'] = '2'
+    opts['cache.short_term.expire'] = 2
     cache = make_cache_obj(**opts)
 
     @cache_region('short_term')
@@ -159,7 +159,7 @@ def test_func_namespace():
 def test_class_key_region():
     opts = {}
     opts['cache.regions'] = 'short_term'
-    opts['cache.short_term.expire'] = '2'
+    opts['cache.short_term.expire'] = 2
     cache = make_cache_obj(**opts)
 
     class Foo(object):
@@ -180,7 +180,7 @@ def test_class_key_region():
 def test_classmethod_key_region():
     opts = {}
     opts['cache.regions'] = 'short_term'
-    opts['cache.short_term.expire'] = '2'
+    opts['cache.short_term.expire'] = 2
     cache = make_cache_obj(**opts)
 
     class Foo(object):
@@ -196,7 +196,7 @@ def test_classmethod_key_region():
 def test_class_key_region_invalidate():
     opts = {}
     opts['cache.regions'] = 'short_term'
-    opts['cache.short_term.expire'] = '2'
+    opts['cache.short_term.expire'] = 2
     cache = make_cache_obj(**opts)
 
     class Foo(object):

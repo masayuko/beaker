@@ -20,7 +20,7 @@ def make_region_cached_func():
     global _cache_obj
     opts = {}
     opts['cache.regions'] = 'short_term, long_term'
-    opts['cache.short_term.expire'] = '2'
+    opts['cache.short_term.expire'] = 2
     cache = make_cache_obj(**opts)
 
     @cache.region('short_term', 'region_loader')
@@ -167,7 +167,7 @@ def test_cache_region_expire_is_always_int():
     try:
         cache = CacheManager(cache_regions={
             'short_term_with_string_expire': {
-                'expire': '60',
+                'expire': 60,
                 'type': 'memory'
             }
         })
