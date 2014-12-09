@@ -33,7 +33,14 @@ from threading import local as _tlocal
 DEFAULT_CACHE_KEY_LENGTH = 250
 
 __all__ = ["ThreadLocal", "WeakValuedRegistry", "SyncDict", "encoded_path",
-           "verify_directory"]
+           "verify_directory", "iteritems"]
+
+if py3k:
+    def iteritems(d, **kw):
+        return iter(d.items(**kw))
+else:
+    def iteritems(d, **kw):
+        return d.iteritems(**kw)
 
 
 def function_named(fn, name):
@@ -400,7 +407,7 @@ def parse_cache_config_options(config, include_defaults=True):
                            log_file=None)
     else:
         options = {}
-    for key, val in config.iteritems():
+    for key, val in iteritems(config):
         if key.startswith('beaker.cache.'):
             options[key[13:]] = val
         if key.startswith('cache.'):
@@ -442,7 +449,7 @@ def parse_memcached_behaviors(config):
     NamespaceManagers that support behaviors"""
     behaviors = {}
 
-    for key, val in config.iteritems():
+    for key, val in iteritems(config):
         if key.startswith('behavior.'):
             behaviors[key[9:]] = val
 

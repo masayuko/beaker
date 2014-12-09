@@ -11,15 +11,7 @@ except:
 from beaker.cache import CacheManager
 from beaker.session import Session, SessionObject
 from beaker.util import coerce_cache_params, coerce_session_params, \
-    parse_cache_config_options
-from beaker.util import py3k
-
-if py3k:
-    def iteritems(d, **kw):
-        return iter(d.items(**kw))
-else:
-    def iteritems(d, **kw):
-        return iter(d.iteritems(**kw))
+    parse_cache_config_options, iteritems
 
 
 class CacheMiddleware(object):
