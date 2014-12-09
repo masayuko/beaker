@@ -72,8 +72,20 @@ class SignedCookie(Cookie.BaseCookie):
             return val[40:], val
 
     def value_encode(self, val):
-        sig = HMAC.new(self.secret, val.encode('UTF-8'), SHA1).hexdigest()
-        return str(val), ("%s%s" % (sig, val))
+        if py3k:
+            if isinstance(val, bytes):
+                val = val.decode('utf-8')
+            elif not isinstance(val, str):
+                val = str(val)
+            sig = HMAC.new(self.secret, val.encode('utf-8'), SHA1).hexdigest()
+            return val, ("%s%s" % (sig, val))
+        else:
+            if isinstance(val, unicode):
+                val = val.encode('utf-8')
+            elif not isinstance(val, bytes):
+                val = str(val).encode('utf-8')
+            sig = HMAC.new(self.secret, val, SHA1).hexdigest()
+            return str(val), ("%s%s" % (sig, val))
 
 
 class Session(dict):
