@@ -19,7 +19,7 @@ import warnings
 import sys
 import inspect
 
-py3k = getattr(sys, 'py3kwarning', False) or sys.version_info >= (3, 0)
+from beaker.compatibility import py3k, string_types, iteritems
 
 if py3k:
     import pickle
@@ -33,14 +33,7 @@ from threading import local as _tlocal
 DEFAULT_CACHE_KEY_LENGTH = 250
 
 __all__ = ["ThreadLocal", "WeakValuedRegistry", "SyncDict", "encoded_path",
-           "verify_directory", "iteritems"]
-
-if py3k:
-    def iteritems(d, **kw):
-        return iter(d.items(**kw))
-else:
-    def iteritems(d, **kw):
-        return d.iteritems(**kw)
+           "verify_directory"]
 
 
 def function_named(fn, name):
@@ -112,7 +105,7 @@ def has_self_arg(func):
 
 def warn(msg, stacklevel=3):
     """Issue a warning."""
-    if isinstance(msg, basestring):
+    if isinstance(msg, string_types):
         warnings.warn(msg, exceptions.BeakerWarning, stacklevel=stacklevel)
     else:
         warnings.warn(msg, stacklevel=stacklevel)
@@ -256,7 +249,7 @@ def encoded_path(root, identifiers, extension=".enc", depth=3,
 def asint(obj):
     if isinstance(obj, int):
         return obj
-    elif isinstance(obj, basestring) and re.match(r'^\d+$', obj):
+    elif isinstance(obj, string_types) and re.match(r'^\d+$', obj):
         return int(obj)
     else:
         raise Exception("This is not a proper int")

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from beaker.util import py3k
+from beaker.compatibility import py3k
 if py3k:
     import http.cookies as Cookie
 else:
@@ -39,7 +39,7 @@ except ImportError:
                 )
         # NB: nothing against second parameter to b64encode, but it seems
         #     to be slower than simple chained replacement
-        if util.py3k:
+        if py3k:
             raw_id = b64encode(sha1(id_str.encode('ascii')).digest())
             return str(raw_id.replace(b'+', b'-').replace(b'/', b'_').rstrip(b'='))
         else:

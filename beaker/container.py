@@ -1,7 +1,8 @@
 """Container and Namespace classes"""
 
+from beaker.compatibility import py3k
 import beaker.util as util
-if util.py3k:
+if py3k:
     try:
         import dbm as anydbm
     except:

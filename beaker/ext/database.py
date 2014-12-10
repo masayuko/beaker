@@ -1,4 +1,4 @@
-from beaker.util import py3k
+from beaker.compatibility import py3k
 if py3k:
     import pickle
 else:

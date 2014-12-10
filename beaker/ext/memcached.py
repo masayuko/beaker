@@ -3,7 +3,8 @@ from beaker.container import NamespaceManager, Container
 from beaker.crypto.util import sha1
 from beaker.exceptions import InvalidCacheBackendError, MissingCacheParameter
 from beaker.synchronization import file_synchronizer
-from beaker.util import verify_directory, SyncDict, parse_memcached_behaviors, py3k
+from beaker.util import verify_directory, SyncDict, parse_memcached_behaviors
+from beaker.compatibility import py3k
 import warnings
 
 MAX_KEY_LENGTH = 250

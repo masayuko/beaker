@@ -8,6 +8,7 @@ as well as the function decorators :func:`.region_decorate`,
 """
 import warnings
 
+from beaker.compatibility import py3k
 import beaker.container as container
 import beaker.util as util
 from beaker.crypto.util import sha1
@@ -318,7 +319,7 @@ class Cache(object):
     remove = remove_value
 
     def _get_value(self, key, **kw):
-        if util.py3k:
+        if py3k:
             if isinstance(key, str):
                 key = key.encode('ascii', 'backslashreplace')
         else:
@@ -578,7 +579,7 @@ def _cache_decorate(deco_args, manager, kwargs, region):
             else:
                 key_length = kwargs.pop('key_length', util.DEFAULT_CACHE_KEY_LENGTH)
             if len(cache_key) + len(namespace) > int(key_length):
-                if util.py3k:
+                if py3k:
                     cache_key = cache_key.encode('utf-8')
                 cache_key = sha1(cache_key).hexdigest()
 
@@ -601,7 +602,7 @@ def _cache_decorator_invalidate(cache, key_length, args):
     except UnicodeEncodeError:
         cache_key = " ".join(map(unicode, args))
     if len(cache_key) + len(cache.namespace_name) > key_length:
-        if util.py3k:
+        if py3k:
             cache_key = cache_key.encode('utf-8')
         cache_key = sha1(cache_key).hexdigest()
     cache.remove_value(cache_key)

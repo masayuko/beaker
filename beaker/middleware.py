@@ -11,7 +11,8 @@ except:
 from beaker.cache import CacheManager
 from beaker.session import Session, SessionObject
 from beaker.util import coerce_cache_params, coerce_session_params, \
-    parse_cache_config_options, iteritems
+    parse_cache_config_options
+from beaker.compatibility import iteritems
 
 
 class CacheMiddleware(object):
