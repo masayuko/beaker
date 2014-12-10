@@ -6,7 +6,7 @@ import tarfile
 import tempfile
 import time
 from beaker.middleware import CacheMiddleware
-from beaker import util
+from beaker.compatibility import py3k
 from beaker.cache import Cache
 from nose import SkipTest
 from beaker.util import skip_if
@@ -32,7 +32,7 @@ pRjbXgkAAAAAAFjVyc1Idc6U1lYGgbSmL0Mjpe248+PYjY87I91x/UGeb3udAAAAAACgfh+fAAAA
 AADgr/t5/sPFTZ5cb/38D19Lzn9pRHX/zR4CtEZ/o+nfiEX9N3kI0Gr9vWl/W0z0BwAAAAAAAAAA
 AAAAAAAAqPAFyOvcKA==
 """
-if util.py3k:
+if py3k:
     dbm_cache_tar = dbm_cache_tar.encode('ascii')
 dbm_cache_tar = zlib.decompress(base64.b64decode(dbm_cache_tar))
 
@@ -45,7 +45,7 @@ kudGVrKgushNkYuVc5VM/Rups5vjY3wErJU6nD+Z7fyFNFpEjIf4AFeef7Jq22TOZnzOpLiJLz0d
 CGyE+q/scHyMk/Wv+E79G0L9hzC7JSFMpv0PN0+J4rv7xNk+iTuKh07E6aXnB9Mao/7X/fExzt//
 FecS9R8C9v/r9rP+l49tubnk+e/z/J8JjvMfAAAAAAAAAADAn70DFJAAwQ==
 """
-if util.py3k:
+if py3k:
     dumbdbm_cache_tar = dumbdbm_cache_tar.encode('ascii')
 dumbdbm_cache_tar = zlib.decompress(base64.b64decode(dumbdbm_cache_tar))
 
