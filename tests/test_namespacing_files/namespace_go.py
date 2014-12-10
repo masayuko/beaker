@@ -1,9 +1,9 @@
-from __future__ import print_function
+from __future__ import absolute_import
 import time
 
 
 def go():
-    import namespace_get
+    from test_namespacing_files import namespace_get
     a = namespace_get.get_cached_value()
     time.sleep(0.3)
     b = namespace_get.get_cached_value()
