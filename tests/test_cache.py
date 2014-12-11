@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 import os
 import platform
 import shutil
@@ -61,24 +61,27 @@ def simple_app(environ, start_response):
     except:
         value = 0
     cache.set_value('value', value+1)
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %s' % cache.get_value('value')]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %s' % cache.get_value('value')
+    return [r.encode('utf-8')]
 
 def cache_manager_app(environ, start_response):
     cm = environ['beaker.cache']
     cm.get_cache('test')['test_key'] = 'test value'
 
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    yield "test_key is: %s\n" % cm.get_cache('test')['test_key']
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = "test_key is: %s\n" % cm.get_cache('test')['test_key']
+    yield r.encode('utf-8')
     cm.get_cache('test').clear()
 
     try:
         test_value = cm.get_cache('test')['test_key']
     except KeyError:
-        yield "test_key cleared"
+        yield "test_key cleared".encode('utf-8')
     else:
-        yield "test_key wasn't cleared, is: %s\n" % \
+        r = "test_key wasn't cleared, is: %s\n" % \
             cm.get_cache('test')['test_key']
+        yield r.encode('utf-8')
 
 def test_has_key():
     cache = Cache('test', data_dir='./cache', type='dbm')

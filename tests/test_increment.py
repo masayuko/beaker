@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import re
 import os
 
 from beaker.middleware import SessionMiddleware
+from beaker.compatibility import py3k
 from nose import SkipTest
 try:
     from webtest import TestApp
@@ -16,9 +18,10 @@ def teardown():
 def no_save_app(environ, start_response):
     session = environ['beaker.session']
     sess_id = environ.get('SESSION_ID')
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %s, session id is %s' % (session.get('value'),
-                                                            session.id)]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %s, session id is %s' % (session.get('value'),
+                                                        session.id)
+    return [r.encode('utf-8')]
 
 def simple_app(environ, start_response):
     session = environ['beaker.session']
@@ -26,16 +29,18 @@ def simple_app(environ, start_response):
     if sess_id:
         session = session.get_by_id(sess_id)
     if not session:
-        start_response('200 OK', [('Content-type', 'text/plain')])
-        return ["No session id of %s found." % sess_id]
+        start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+        r = "No session id of %s found." % sess_id
+        return [r.encode('utf-8')]
     if not 'value' in session:
         session['value'] = 0
     session['value'] += 1
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %d, session id is %s' % (session['value'],
-                                                            session.id)]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %d, session id is %s' % (session['value'],
+                                                        session.id)
+    return [r.encode('utf-8')]
 
 def simple_auto_app(environ, start_response):
     """Like the simple_app, but assume that sessions auto-save"""
@@ -51,9 +56,10 @@ def simple_auto_app(environ, start_response):
     session['value'] += 1
     if environ['PATH_INFO'].startswith('/nosave'):
         session.revert()
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %d, session id is %s' % (session.get('value', 0),
-                                                            session.id)]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %d, session id is %s' % (session.get('value', 0),
+                                                        session.id)
+    return [r.encode('utf-8')]
 
 def test_no_save():
     options = {'session.data_dir':'./cache', 'session.secret':'blah'}
@@ -155,7 +161,11 @@ def test_load_session_by_id():
     res = app.get('/')
     res = app.get('/')
     assert 'current value is: 3' in res
-    old_id = re.sub(r'^.*?session id is (\S+)$', r'\1', res.body, re.M)
+    if py3k:
+        old_id = re.sub(r'^.*?session id is (\S+)$', r'\1',
+                        res.body.decode('utf-8'), re.M)
+    else:
+        old_id = re.sub(r'^.*?session id is (\S+)$', r'\1', res.body, re.M)
 
     # Clear the cookies and do a new request
     app = TestApp(SessionMiddleware(simple_app, **options))

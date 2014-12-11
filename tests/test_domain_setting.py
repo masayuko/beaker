@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 import os
 
@@ -22,9 +23,10 @@ def simple_app(environ, start_response):
     session['value'] += 1
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %d, session id is %s' % (session['value'],
-                                                            session.id)]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %d, session id is %s' % (session['value'],
+                                                        session.id)
+    return [r.encode('utf-8')]
 
 
 def test_same_domain():

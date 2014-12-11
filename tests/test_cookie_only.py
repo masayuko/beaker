@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 import datetime, time
 import re
 import os
 
 import beaker.session
 from beaker.middleware import SessionMiddleware
+from beaker.compatibility import py3k
 from nose import SkipTest
 try:
     from webtest import TestApp
@@ -22,8 +24,9 @@ def simple_app(environ, start_response):
     session['value'] += 1
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %d and cookie is %s' % (session['value'], session)]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %d and cookie is %s' % (session['value'], session)
+    return [r.encode('utf-8')]
 
 def test_increment():
     options = {'session.validate_key':'hoobermas', 'session.type':'cookie'}
@@ -122,9 +125,15 @@ def test_cookie_id():
     app = TestApp(SessionMiddleware(simple_app, **options))
     res = app.get('/')
     assert "_id':" in res
-    sess_id = re.sub(r".*'_id': '(.*?)'.*", r'\1', res.body)
+    if py3k:
+        sess_id = re.sub(r".*'_id': '(.*?)'.*", r'\1', res.body.decode('utf-8'))
+    else:
+        sess_id = re.sub(r".*'_id': '(.*?)'.*", r'\1', res.body)
     res = app.get('/')
-    new_id = re.sub(r".*'_id': '(.*?)'.*", r'\1', res.body)
+    if py3k:
+        new_id = re.sub(r".*'_id': '(.*?)'.*", r'\1', res.body.decode('utf-8'))
+    else:
+        new_id = re.sub(r".*'_id': '(.*?)'.*", r'\1', res.body)
     assert new_id == sess_id
 
 def test_invalidate_with_save_does_not_delete_session():
@@ -132,8 +141,9 @@ def test_invalidate_with_save_does_not_delete_session():
         session = environ['beaker.session']
         session.invalidate()
         session.save()
-        start_response('200 OK', [('Content-type', 'text/plain')])
-        return ['Cookie is %s' % session]
+        start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+        r = 'Cookie is %s' % session
+        return [r.encode('utf-8')]
 
     options = {'session.encrypt_key':'666a19cf7f61c64c', 'session.validate_key':'hoobermas',
                'session.type':'cookie'}

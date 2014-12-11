@@ -25,8 +25,10 @@ def simple_app(environ, start_response):
         session.domain = domain
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
-    return ['The current value is: %d and cookie is %s' % (session['value'], session)]
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    r = 'The current value is: %d and cookie is %s' % \
+        (session['value'], session)
+    return [r.encode('utf-8')]
 
 
 def test_increment():
