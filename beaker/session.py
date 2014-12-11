@@ -560,6 +560,8 @@ class CookieSession(Session):
             self.is_new = False
             try:
                 cookie_data = self.cookie[self.key].value
+                if py3k:
+                    cookie_data = cookie_data.encode('utf-8')
                 self.update(self._decrypt_data(cookie_data))
                 self._path = self.get('_path', '/')
             except:
