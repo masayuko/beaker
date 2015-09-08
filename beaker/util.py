@@ -1,5 +1,5 @@
 """Beaker utilities"""
-from ._compat import PY2, string_type, unicode_text, NoneType, dictkeyslist, im_class, im_func
+from ._compat import PY2, string_type, unicode_text, NoneType, dictkeyslist, im_class, im_func, iteritems
 
 try:
     import threading as _threading
@@ -391,7 +391,7 @@ def parse_cache_config_options(config, include_defaults=True):
                            log_file=None)
     else:
         options = {}
-    for key, val in config.items():
+    for key, val in iteritems(config):
         if key.startswith('beaker.cache.'):
             options[key[13:]] = val
         if key.startswith('cache.'):
@@ -433,7 +433,7 @@ def parse_memcached_behaviors(config):
     NamespaceManagers that support behaviors"""
     behaviors = {}
 
-    for key, val in config.items():
+    for key, val in iteritems(config):
         if key.startswith('behavior.'):
             behaviors[key[9:]] = val
 
