@@ -1,5 +1,6 @@
-from ._compat import PY2, pickle, http_cookies, unicode_text, b64encode, b64decode
+from ._compat import PY2, pickle, http_cookies, unicode_text, byte_string, b64encode, b64decode
 
+import base64
 import os
 import time
 from datetime import datetime, timedelta
@@ -45,16 +46,23 @@ except ImportError:
 class SignedCookie(http_cookies.BaseCookie):
     """Extends python cookie to give digital signature support"""
     def __init__(self, secret, input=None):
-        self.secret = secret.encode('UTF-8')
+        if isinstance(secret, unicode_text):
+            self.secret = secret.encode('utf-8')
+        elif isinstance(secret, byte_string):
+            self.secret = secret
+        else:
+            raise TypeError('secret: expected utf-8 encoded bytes or unicode, but got %r' % type(secret))
         http_cookies.BaseCookie.__init__(self, input)
 
     def value_decode(self, val):
-        val = val.strip('"')
-        sig = HMAC.new(self.secret, val[40:].encode('utf-8'), SHA1).hexdigest()
+        msg = val[40:]
+        if isinstance(msg, unicode_text):
+            msg = msg.encode('utf-8')
+        sig = HMAC.new(self.secret, msg, SHA1).hexdigest()
+        input_sig = val[:40]
 
         # Avoid timing attacks
         invalid_bits = 0
-        input_sig = val[:40]
         if len(sig) != len(input_sig):
             return None, val
 
@@ -63,12 +71,15 @@ class SignedCookie(http_cookies.BaseCookie):
 
         if invalid_bits:
             return None, val
-        else:
-            return val[40:], val
+
+        return pickle.loads(base64.b64decode(msg)), val
 
     def value_encode(self, val):
-        sig = HMAC.new(self.secret, val.encode('utf-8'), SHA1).hexdigest()
-        return str(val), ("%s%s" % (sig, val))
+        msg = base64.b64encode(pickle.dumps(val, -1))
+        sig = HMAC.new(self.secret, msg, SHA1).hexdigest()
+        if not PY2:
+            msg = msg.decode('ascii')
+        return val, sig + msg
 
 
 class Session(dict):
