@@ -1,4 +1,4 @@
-from ._compat import PY2, pickle, http_cookies, unicode_text, byte_string, b64encode, b64decode
+from ._compat import PY2, pickle, http_cookies, unicode_text, byte_string
 
 import base64
 import os
@@ -36,11 +36,10 @@ except ImportError:
         # NB: nothing against second parameter to b64encode, but it seems
         #     to be slower than simple chained replacement
         if not PY2:
-            raw_id = b64encode(sha1(id_str.encode('ascii')).digest())
-            return str(raw_id.replace(b'+', b'-').replace(b'/', b'_').rstrip(b'='))
+            raw_id = base64.b64encode(sha1(id_str.encode('ascii')).digest()).decode('ascii')
         else:
-            raw_id = b64encode(sha1(id_str).digest())
-            return raw_id.replace('+', '-').replace('/', '_').rstrip('=')
+            raw_id = base64.b64encode(sha1(id_str).digest())
+        return raw_id.replace('+', '-').replace('/', '_').rstrip('=')
 
 
 class SignedCookie(http_cookies.BaseCookie):
@@ -267,25 +266,41 @@ class Session(dict):
     def _encrypt_data(self, session_data=None):
         """Serialize, encipher, and base64 the session dict"""
         session_data = session_data or self.copy()
+        dumped = pickle.dumps(session_data, 2)
+
+        validate_key = self.validate_key
+        if isinstance(validate_key, unicode_text):
+            validate_key = validate_key.encode('utf-8')
+
         if self.encrypt_key:
-            nonce = b64encode(os.urandom(6))[:8]
+            nonce = base64.b64encode(os.urandom(6))[:8]
             encrypt_key = crypto.generateCryptoKeys(self.encrypt_key,
-                                                    self.validate_key + nonce, 1)
-            data = pickle.dumps(session_data, 2)
-            return nonce + b64encode(crypto.aesEncrypt(data, encrypt_key))
+                                                    validate_key + nonce, 1)
+            encrypted = crypto.aesEncrypt(dumped, encrypt_key)
+            encrypted = nonce + base64.b64encode(encrypted)
         else:
-            data = pickle.dumps(session_data, 2)
-            return b64encode(data)
+            encrypted = base64.b64encode(dumped)
+
+        if not PY2:
+            encrypted = encrypted.decode('ascii')
+        return encrypted
 
     def _decrypt_data(self, session_data):
         """Bas64, decipher, then un-serialize the data for the session
         dict"""
+        if isinstance(session_data, unicode_text):
+            session_data = session_data.encode('ascii')
+
         if self.encrypt_key:
+            validate_key = self.validate_key
+            if isinstance(validate_key, unicode_text):
+                validate_key = validate_key.encode('utf-8')
+
             try:
                 nonce = session_data[:8]
                 encrypt_key = crypto.generateCryptoKeys(self.encrypt_key,
-                                                        self.validate_key + nonce, 1)
-                payload = b64decode(session_data[8:])
+                                                        validate_key + nonce, 1)
+                payload = base64.b64decode(session_data[8:])
                 data = crypto.aesDecrypt(payload, encrypt_key)
             except:
                 # As much as I hate a bare except, we get some insane errors
@@ -303,7 +318,7 @@ class Session(dict):
                 else:
                     raise
         else:
-            data = b64decode(session_data)
+            data = base64.b64decode(session_data)
             return pickle.loads(data)
 
     def _delete_cookie(self):
