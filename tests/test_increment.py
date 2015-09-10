@@ -16,7 +16,7 @@ def teardown():
 def no_save_app(environ, start_response):
     session = environ['beaker.session']
     sess_id = environ.get('SESSION_ID')
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %s, session id is %s' % (session.get('value'),
                                                           session.id)
     return [msg.encode('utf-8')]
@@ -27,14 +27,14 @@ def simple_app(environ, start_response):
     if sess_id:
         session = session.get_by_id(sess_id)
     if not session:
-        start_response('200 OK', [('Content-type', 'text/plain')])
+        start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
         return [("No session id of %s found." % sess_id).encode('utf-8')]
     if not 'value' in session:
         session['value'] = 0
     session['value'] += 1
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %s, session id is %s' % (session.get('value'),
                                                           session.id)
     return [msg.encode('utf-8')]
@@ -46,14 +46,14 @@ def simple_auto_app(environ, start_response):
     if sess_id:
         session = session.get_by_id(sess_id)
     if not session:
-        start_response('200 OK', [('Content-type', 'text/plain')])
+        start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
         return [("No session id of %s found." % sess_id).encode('utf-8')]
     if not 'value' in session:
         session['value'] = 0
     session['value'] += 1
     if environ['PATH_INFO'].startswith('/nosave'):
         session.revert()
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %s, session id is %s' % (session.get('value', 0),
                                                           session.id)
     return [msg.encode('utf-8')]
