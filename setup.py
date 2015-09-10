@@ -24,7 +24,7 @@ else:
     tests_require.append('coverage')
 
 
-if not sys.platform.startswith('java') and not sys.platform == 'cli':
+if not sys.platform == 'cli':
     tests_require.extend(['SQLALchemy'])
     try:
         import sqlite3

@@ -3,9 +3,8 @@ import sys
 # True if we are running on Python 2.
 PY2 = sys.version_info[0] == 2
 PYVER = sys.version_info[:2]
-JYTHON = sys.platform.startswith('java')
 
-if PY2 and not JYTHON:  # pragma: no cover
+if PY2:  # pragma: no cover
     import cPickle as pickle
 else:  # pragma: no cover
     import pickle
