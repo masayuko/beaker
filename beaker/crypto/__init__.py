@@ -3,7 +3,6 @@ from beaker.crypto.util import hmac, sha1, hmac_sha1, md5
 from beaker import util
 from beaker.exceptions import InvalidCryptoBackendError
 
-keyLength = None
 DEFAULT_NONCE_BITS = 128
 
 CRYPTO_MODULES = {}
