@@ -50,6 +50,9 @@ if not PY2:  # pragma: no cover
     def dictkeyslist(d):
         return list(d.keys())
 
+    def iteritems(d, **kw):
+        return iter(d.items(**kw))
+
 else:
     xrange_ = xrange
     from types import NoneType
@@ -83,6 +86,8 @@ else:
     def dictkeyslist(d):
         return d.keys()
 
+    def iteritems(d, **kw):
+        return iter(d.iteritems(**kw))
 
 def im_func(f):
     if not PY2:  # pragma: no cover
