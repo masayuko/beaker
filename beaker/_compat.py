@@ -26,18 +26,11 @@ if not PY2:  # pragma: no cover
     from urllib.parse import urlparse as url_parse
     from urllib.request import url2pathname
     import http.cookies as http_cookies
-    from base64 import b64decode as _b64decode, b64encode as _b64encode
 
     try:
         import dbm as anydbm
     except:
         import dumbdbm as anydbm
-
-    def b64decode(b):
-        return _b64decode(b.encode('ascii'))
-
-    def b64encode(s):
-        return _b64encode(s).decode('ascii')
 
     def u_(s):
         return str(s)
@@ -67,7 +60,6 @@ else:
     from urlparse import urlparse as url_parse
     from urllib import url2pathname
     import Cookie as http_cookies
-    from base64 import b64decode, b64encode
     import anydbm
 
     def u_(s):

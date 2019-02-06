@@ -1,5 +1,6 @@
-from ._compat import PY2, pickle, http_cookies, unicode_text, b64encode, b64decode, string_type
+from ._compat import PY2, pickle, http_cookies, unicode_text, string_type
 
+import base64
 import os
 import time
 from datetime import datetime, timedelta
@@ -47,10 +48,9 @@ except ImportError:
         # NB: nothing against second parameter to b64encode, but it seems
         #     to be slower than simple chained replacement
         if not PY2:
-            raw_id = b64encode(sha1(id_str.encode('ascii')).digest())
-            return str(raw_id.replace(b'+', b'-').replace(b'/', b'_').rstrip(b'='))
+            raw_id = base64.b64encode(sha1(id_str.encode('ascii')).digest()).decode('ascii')
         else:
-            raw_id = b64encode(sha1(id_str).digest())
+            raw_id = base64.b64encode(sha1(id_str).digest())
             return raw_id.replace('+', '-').replace('/', '_').rstrip('=')
 
 
@@ -327,18 +327,17 @@ class Session(dict):
     def _encrypt_data(self, session_data=None):
         """Serialize, encipher, and base64 the session dict"""
         session_data = session_data or self.copy()
+        data = self.serializer.dumps(session_data)
         if self.encrypt_key:
             nonce_len, nonce_b64len = self.encrypt_nonce_size
-            nonce = b64encode(os.urandom(nonce_len))[:nonce_b64len]
+            nonce = base64.b64encode(os.urandom(nonce_len))[:nonce_b64len]
             encrypt_key = crypto.generateCryptoKeys(self.encrypt_key,
                                                     self.validate_key + nonce,
                                                     1,
                                                     self.crypto_module.getKeyLength())
-            data = self.serializer.dumps(session_data)
             return nonce + b64encode(self.crypto_module.aesEncrypt(data, encrypt_key))
         else:
-            data = self.serializer.dumps(session_data)
-            return b64encode(data)
+            return base64.b64encode(data)
 
     def _decrypt_data(self, session_data):
         """Base64, decipher, then un-serialize the data for the session
@@ -350,10 +349,10 @@ class Session(dict):
                                                     self.validate_key + nonce,
                                                     1,
                                                     self.crypto_module.getKeyLength())
-            payload = b64decode(session_data[nonce_b64len:])
+            payload = base64.b64decode(session_data[nonce_b64len:])
             data = self.crypto_module.aesDecrypt(payload, encrypt_key)
         else:
-            data = b64decode(session_data)
+            data = base64.b64decode(session_data)
 
         return self.serializer.loads(data)
 
