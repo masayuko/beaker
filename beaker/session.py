@@ -489,13 +489,12 @@ class Session(dict):
             else:
                 data = dict(self.items())
 
-            if self.encrypt_key:
-                data = self._encrypt_data(data)
-
             # Save the data
             if not data and 'session' in self.namespace:
                 del self.namespace['session']
             else:
+                if self.encrypt_key:
+                    data = self._encrypt_data(data)
                 self.namespace['session'] = data
         finally:
             self.namespace.release_write_lock()
