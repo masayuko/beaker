@@ -1,4 +1,4 @@
-from ._compat import PY2, pickle, http_cookies, unicode_text, string_type
+from ._compat import PY2, pickle, http_cookies, unicode_text, string_type, byte_string
 
 import base64
 import os
@@ -57,7 +57,12 @@ except ImportError:
 class SignedCookie(SimpleCookie):
     """Extends python cookie to give digital signature support"""
     def __init__(self, secret, input=None):
-        self.secret = secret.encode('UTF-8')
+        if isinstance(secret, unicode_text):
+            self.secret = secret.encode('utf-8')
+        elif isinstance(secret, byte_string):
+            self.secret = secret
+        else:
+            raise TypeError('secret: expected utf-8 encoded bytes or unicode, but got %r' % type(secret))
         http_cookies.BaseCookie.__init__(self, input)
 
     def value_decode(self, val):
@@ -65,7 +70,10 @@ class SignedCookie(SimpleCookie):
         if not val:
             return None, val
 
-        sig = HMAC.new(self.secret, val[40:].encode('utf-8'), SHA1).hexdigest()
+        msg = val[40:]
+        if isinstance(msg, unicode_text):
+            msg = msg.encode('utf-8')
+        sig = HMAC.new(self.secret, msg, SHA1).hexdigest()
 
         # Avoid timing attacks
         invalid_bits = 0
@@ -79,11 +87,14 @@ class SignedCookie(SimpleCookie):
         if invalid_bits:
             return InvalidSignature, val
         else:
-            return val[40:], val
+            return pickle.loads(base64.b64decode(msg)), val
 
     def value_encode(self, val):
-        sig = HMAC.new(self.secret, val.encode('utf-8'), SHA1).hexdigest()
-        return str(val), ("%s%s" % (sig, val))
+        msg = base64.b64encode(pickle.dumps(val, -1))
+        sig = HMAC.new(self.secret, msg, SHA1).hexdigest()
+        if not PY2:
+            msg = msg.decode('ascii')
+        return str(val), sig + msg
 
 
 class Session(dict):
@@ -182,7 +193,10 @@ class Session(dict):
         self.httponly = httponly
         self.samesite = samesite
         self.encrypt_key = encrypt_key
-        self.validate_key = validate_key
+        if isinstance(validate_key, unicode_text):
+            self.validate_key = validate_key.encode('utf-8')
+        else:
+            self.validate_key = validate_key
         self.encrypt_nonce_size = get_nonce_size(encrypt_nonce_bits)
         self.crypto_module = get_crypto_module(crypto_type)
         self.id = id
@@ -342,6 +356,9 @@ class Session(dict):
     def _decrypt_data(self, session_data):
         """Base64, decipher, then un-serialize the data for the session
         dict"""
+        if isinstance(session_data, unicode_text):
+            session_data = session_data.encode('ascii')
+
         if self.encrypt_key:
             __, nonce_b64len = self.encrypt_nonce_size
             nonce = session_data[:nonce_b64len]
@@ -583,7 +600,10 @@ class CookieSession(Session):
         self.save_atime = save_accessed_time
         self.cookie_expires = cookie_expires
         self.encrypt_key = encrypt_key
-        self.validate_key = validate_key
+        if isinstance(validate_key, unicode_text):
+            self.validate_key = validate_key.encode('utf-8')
+        else:
+            self.validate_key = validate_key
         self.encrypt_nonce_size = get_nonce_size(encrypt_nonce_bits)
         self.request['set_cookie'] = False
         self.secure = secure
