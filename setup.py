@@ -41,7 +41,7 @@ if py_version == (3, 3):
 else:
     TESTS_REQUIRE.append('cryptography')
 
-if not sys.platform.startswith('java') and not sys.platform == 'cli':
+if not sys.platform == 'cli':
     if py_version == (2, 6):
         TESTS_REQUIRE.append('sqlalchemy < 1.2')
     else:

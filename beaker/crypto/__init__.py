@@ -1,6 +1,3 @@
-from .._compat import JYTHON
-
-
 from beaker.crypto.pbkdf2 import pbkdf2
 from beaker.crypto.util import hmac, sha1, hmac_sha1, md5
 from beaker import util
@@ -15,22 +12,15 @@ CRYPTO_MODULES = {}
 def load_default_module():
     """ Load the default crypto module
     """
-    if JYTHON:
+    try:
+        from beaker.crypto import nsscrypto
+        return nsscrypto
+    except ImportError:
         try:
-            from beaker.crypto import jcecrypto
-            return jcecrypto
+            from beaker.crypto import pycrypto
+            return pycrypto
         except ImportError:
             pass
-    else:
-        try:
-            from beaker.crypto import nsscrypto
-            return nsscrypto
-        except ImportError:
-            try:
-                from beaker.crypto import pycrypto
-                return pycrypto
-            except ImportError:
-                pass
     from beaker.crypto import noencryption
     return noencryption
 
