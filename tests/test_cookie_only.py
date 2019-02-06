@@ -26,7 +26,7 @@ def simple_app(environ, start_response):
     session['value'] += 1
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %d and cookie is %s' % (session['value'], session)
     return [msg.encode('UTF-8')]
 
@@ -234,7 +234,7 @@ def test_invalidate_with_save_does_not_delete_session():
         session = environ['beaker.session']
         session.invalidate()
         session.save()
-        start_response('200 OK', [('Content-type', 'text/plain')])
+        start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
         return [('Cookie is %s' % session).encode('UTF-8')]
 
     options = {'session.encrypt_key':'666a19cf7f61c64c', 'session.validate_key':'hoobermas',

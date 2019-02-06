@@ -25,7 +25,7 @@ def simple_app(environ, start_response):
         session.domain = domain
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %d and cookie is %s' % (session['value'], session)
     return [msg.encode('utf-8')]
 

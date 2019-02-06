@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 from beaker._compat import u_, bytes_
 
 import os
@@ -60,7 +60,7 @@ def simple_app(environ, start_response):
     except:
         value = 0
     cache.set_value('value', value+1)
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %s' % cache.get_value('value')
     return [msg.encode('utf-8')]
 
@@ -68,7 +68,7 @@ def cache_manager_app(environ, start_response):
     cm = environ['beaker.cache']
     cm.get_cache('test')['test_key'] = 'test value'
 
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     yield ("test_key is: %s\n" % cm.get_cache('test')['test_key']).encode('utf-8')
     cm.get_cache('test').clear()
 

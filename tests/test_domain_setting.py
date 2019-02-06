@@ -22,7 +22,7 @@ def simple_app(environ, start_response):
     session['value'] += 1
     if not environ['PATH_INFO'].startswith('/nosave'):
         session.save()
-    start_response('200 OK', [('Content-type', 'text/plain')])
+    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
     msg = 'The current value is: %s, session id is %s' % (session.get('value', 0),
                                                           session.id)
     return [msg.encode('utf-8')]

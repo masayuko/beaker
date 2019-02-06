@@ -30,14 +30,14 @@ class CacheManagerBaseTests(unittest.TestCase):
                 if sess_id:
                     session = session.get_by_id(sess_id)
                 if not session:
-                    start_response('200 OK', [('Content-type', 'text/plain')])
+                    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
                     return [("No session id of %s found." % sess_id).encode('utf-8')]
                 if not session.has_key('value'):
                     session['value'] = 0
                 session['value'] += 1
                 if not environ['PATH_INFO'].startswith('/nosave'):
                     session.save()
-            start_response('200 OK', [('Content-type', 'text/plain')])
+            start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
             return [('The current value is: %d, session id is %s' % (session['value'],
                                                                      session.id)).encode('utf-8')]
 
@@ -54,7 +54,7 @@ class CacheManagerBaseTests(unittest.TestCase):
             except:
                 value = 0
             cache.set_value('value', value + 1)
-            start_response('200 OK', [('Content-type', 'text/plain')])
+            start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
             return [('The current value is: %s' % cache.get_value('value')).encode('utf-8')]
 
         def using_none_app(environ, start_response):
@@ -70,14 +70,14 @@ class CacheManagerBaseTests(unittest.TestCase):
             except:
                 value = 10
             cache.set_value('value', None)
-            start_response('200 OK', [('Content-type', 'text/plain')])
+            start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
             return [('The current value is: %s' % value).encode('utf-8')]
 
         def cache_manager_app(environ, start_response):
             cm = environ['beaker.cache']
             cm.get_cache('test')['test_key'] = 'test value'
 
-            start_response('200 OK', [('Content-type', 'text/plain')])
+            start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
             yield ("test_key is: %s\n" % cm.get_cache('test')['test_key']).encode('utf-8')
             cm.get_cache('test').clear()
 
